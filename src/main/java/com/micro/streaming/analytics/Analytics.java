@@ -24,7 +24,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
 @SpringBootApplication
-@ComponentScan({"com.micro.streaming.analytics.mongo"})
+@ComponentScan({"com.micro.streaming.analytics.mongo", "com.micro.streaming.analytics.injector"})
 public class Analytics {
 	
 	private final static String QUEUE_NAME = "hello";
@@ -32,12 +32,12 @@ public class Analytics {
 	@Autowired
 	private MongoDao mongoDao;
 	
-	public static void main(String[] args) throws IOException, TimeoutException {
+	@Autowired
+	private AnalyticsProperties analyticsProperties;
+	
+	public static void main(String[] args) throws IOException, TimeoutException {		
 		
-		System.out.println("Hello World!");
-		
-		SpringApplication.run(Analytics.class, args);
-		
+		SpringApplication.run(Analytics.class, args);		
 	}
 	
 	@PostConstruct
@@ -50,7 +50,7 @@ public class Analytics {
 	    Connection connection = factory.newConnection();
 	    Channel channel = connection.createChannel();
 
-	    channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+	    channel.queueDeclare(analyticsProperties.getQueueIN(), false, false, false, null);
 	    
 	    System.out.println("Waiting for messages...");
 	    
