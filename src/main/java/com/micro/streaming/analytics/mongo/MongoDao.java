@@ -7,6 +7,6 @@ public interface MongoDao {
 	
 	public Document getAvgTemeperatureById(String id);
 	
-	public void saveData(String device, Double temperature);
+	public void saveData(String device, String datastreamId, String feed, Double temperature);
 
 }

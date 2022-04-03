@@ -11,6 +11,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
+import com.micro.streaming.analytics.model.IOTData;
 import com.micro.streaming.analytics.mongo.MongoCollectionFields;
 import com.micro.streaming.analytics.mongo.MongoDao;
 import com.rabbitmq.client.Channel;
@@ -53,16 +56,39 @@ public class Analytics {
 	    
 	    System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 	    
-	    DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+	    @SuppressWarnings("unchecked")
+		DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 	        String message = new String(delivery.getBody(), "UTF-8");
 	        System.out.println("Received '" + message + "'");
+	        IOTData<Double> iotData = null;
+	        
+	        try {
+	        	iotData = new Gson().fromJson(message, IOTData.class);
+	        	
+	        } catch (JsonParseException jsonEx) {
+	        	System.out.println("Received message mal formed");
+	        }
 
-//	        mongoDao.saveData("asset1", 17.50);
+	        if(iotData.getDevice()==null 
+	        		|| iotData.getDatastreams()==null
+	        		|| iotData.getDatastreams().isEmpty()
+	        		|| iotData.getDatastreams().get(0).getDatapoints()==null
+	        		|| iotData.getDatastreams().get(0).getDatapoints().isEmpty()) {
+	        	System.out.println("Received message without measure");
+	        }
+	        
+        	String device = iotData.getDevice();        	
+	        iotData.getDatastreams().forEach(datastream -> {
+	        	datastream.getDatapoints()
+	        		.forEach(datapoint -> {	      
+	        			mongoDao.saveData(device, datastream.getId(), datastream.getFeed(), datapoint.getValue());
+	        		});
+    		});
 			
-			Document result = mongoDao.getAvgTemeperatureById("asset1");
+			Document result = mongoDao.getAvgTemeperatureById(device);
 			
 			if(result!=null && result.getDouble(MongoCollectionFields.otuput_avg)!=null) {
-				System.out.println(" AVG Temperature " + result.getDouble(MongoCollectionFields.otuput_avg).toString());
+				System.out.println("Device: " + device + "\n AVG Temperature: " + result.getDouble(MongoCollectionFields.otuput_avg).toString() + "\n");
 			}
 	    };
 	    

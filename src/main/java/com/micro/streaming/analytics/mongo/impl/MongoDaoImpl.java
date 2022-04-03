@@ -9,6 +9,7 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.micro.streaming.analytics.model.IOTData;
 import com.micro.streaming.analytics.mongo.MongoActions;
 import com.micro.streaming.analytics.mongo.MongoCollectionFields;
 import com.micro.streaming.analytics.mongo.MongoDao;
@@ -17,6 +18,8 @@ import com.mongodb.client.MongoCollection;
 @Component
 public class MongoDaoImpl implements MongoDao {
 	
+	private static final String DATAPOINT_VERSION = "1.0.0";
+
 	@Autowired
 	private MongoCollection<Document> southCollectCollection;
 	
@@ -46,17 +49,26 @@ public class MongoDaoImpl implements MongoDao {
 	}
 
 	@Override
-	public void saveData(String device, Double temperature) {
+	public void saveData(String device, String datastreamId, String feed, Double temperature) {
 		
-		Document version = new Document(MongoCollectionFields.version, "1.0.0");
+		Document version = new Document(MongoCollectionFields.version, DATAPOINT_VERSION);
 		
-		List<Object> datapoints = Arrays.asList(new Document(MongoCollectionFields.value, temperature));		
-		Document id = new Document(MongoCollectionFields.id, device);		
-		Document datastream = new Document(id)
-				.append(MongoCollectionFields.feed, "feed_t")
-				.append(MongoCollectionFields.datapoints, datapoints);
-		List<Object> datastreams = Arrays.asList(datastream);		
+		List<Document> datapoints = new ArrayList<Document>();
+		datapoints.add(new Document(MongoCollectionFields.value, temperature));		
+		Document datastream = new Document(MongoCollectionFields.datapoints, datapoints);
+		
+		if(datastreamId != null) {
+			datastream.append(MongoCollectionFields.id, datastreamId);
+		}
+		
+		if(feed != null) {
+			datastream.append(MongoCollectionFields.feed, "feed_t");
+		}
+		
+		List<Document> datastreams = new ArrayList<Document>();
+		datastreams.add(datastream);		
 		Document data = new Document(version)
+				.append(MongoCollectionFields.device, device)
 				.append(MongoCollectionFields.datastreams, datastreams);
 		
 		southCollectCollection.insertOne(data);
