@@ -1,15 +1,14 @@
 package com.micro.streaming.analytics.mongo.impl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.assertj.core.util.Arrays;
 import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.micro.streaming.analytics.model.IOTData;
 import com.micro.streaming.analytics.mongo.MongoActions;
 import com.micro.streaming.analytics.mongo.MongoCollectionFields;
 import com.micro.streaming.analytics.mongo.MongoDao;
@@ -49,7 +48,7 @@ public class MongoDaoImpl implements MongoDao {
 	}
 
 	@Override
-	public void saveData(String device, String datastreamId, String feed, Double temperature) {
+	public void saveIOTData(String device, String datastreamId, String feed, Double temperature) {
 		
 		Document version = new Document(MongoCollectionFields.version, DATAPOINT_VERSION);
 		
@@ -62,7 +61,7 @@ public class MongoDaoImpl implements MongoDao {
 		}
 		
 		if(feed != null) {
-			datastream.append(MongoCollectionFields.feed, "feed_t");
+			datastream.append(MongoCollectionFields.feed, feed);
 		}
 		
 		List<Document> datastreams = new ArrayList<Document>();
@@ -72,6 +71,18 @@ public class MongoDaoImpl implements MongoDao {
 				.append(MongoCollectionFields.datastreams, datastreams);
 		
 		southCollectCollection.insertOne(data);
+	}
+
+	@Override
+	public void provisionData(String device, Double value, Date date) {
+		
+		Document temperature = new Document(MongoCollectionFields.device, device)
+				.append(MongoCollectionFields.date, date)
+				.append(MongoCollectionFields.value, value);
+		Document provision = new Document(MongoCollectionFields.temperature, temperature);
+		
+		provisionCollectCollection.insertOne(provision);
+		
 	}
 
 }

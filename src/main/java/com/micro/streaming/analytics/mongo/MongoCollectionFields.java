@@ -16,5 +16,9 @@ public class MongoCollectionFields {
 	public static final String datastreams = "datastreams";
 	public static final String datapoints = "datapoints";
 	
+	/**PROVISION*/
+	public static final String temperature = "temperature";
+	public static final String date = "data";
+	
 
 }

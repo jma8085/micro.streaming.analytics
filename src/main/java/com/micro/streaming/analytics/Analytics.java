@@ -1,6 +1,7 @@
 package com.micro.streaming.analytics;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.concurrent.TimeoutException;
 
 import javax.annotation.PostConstruct;
@@ -11,6 +12,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
+import com.github.wnameless.json.flattener.JsonFlattener;
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 import com.micro.streaming.analytics.model.IOTData;
@@ -21,10 +23,6 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-/**
- * Hello world!
- *
- */
 @SpringBootApplication
 @ComponentScan({"com.micro.streaming.analytics.mongo"})
 public class Analytics {
@@ -54,12 +52,12 @@ public class Analytics {
 
 	    channel.queueDeclare(QUEUE_NAME, false, false, false, null);
 	    
-	    System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+	    System.out.println("Waiting for messages...");
 	    
 	    @SuppressWarnings("unchecked")
 		DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 	        String message = new String(delivery.getBody(), "UTF-8");
-	        System.out.println("Received '" + message + "'");
+	        System.out.println("Received '" + JsonFlattener.flatten(message) + "'");
 	        IOTData<Double> iotData = null;
 	        
 	        try {
@@ -81,14 +79,20 @@ public class Analytics {
 	        iotData.getDatastreams().forEach(datastream -> {
 	        	datastream.getDatapoints()
 	        		.forEach(datapoint -> {	      
-	        			mongoDao.saveData(device, datastream.getId(), datastream.getFeed(), datapoint.getValue());
+	        			mongoDao.saveIOTData(device, datastream.getId(), datastream.getFeed(), datapoint.getValue());
 	        		});
     		});
 			
 			Document result = mongoDao.getAvgTemeperatureById(device);
 			
 			if(result!=null && result.getDouble(MongoCollectionFields.otuput_avg)!=null) {
-				System.out.println("Device: " + device + "\n AVG Temperature: " + result.getDouble(MongoCollectionFields.otuput_avg).toString() + "\n");
+				Double avg = result.getDouble(MongoCollectionFields.otuput_avg);
+				mongoDao.provisionData(device, avg, new Date(System.currentTimeMillis()));
+				
+				System.out.println("Device: " + device + "\nAVG provisioned temperature: " + avg.toString() + "\n");
+			
+			} else {
+				System.out.println("There is some error to provisioned AVG temperature");
 			}
 	    };
 	    

@@ -83,7 +83,12 @@
 			<artifactId>mongodb-driver-core</artifactId>
 			<version>4.5.1</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>com.github.wnameless</groupId>
+			<artifactId>json-flattener</artifactId>
+			<version>0.1.0</version>
+		</dependency>
+
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
 			<artifactId>gson</artifactId>
