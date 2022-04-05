@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 public class AnalyticsProperties {
 	
 	private String queueIN;
+	private String rabbitHost;
 
 	public String getQueueIN() {
 		return queueIN;
@@ -17,6 +18,14 @@ public class AnalyticsProperties {
 
 	public void setQueueIN(String queueIN) {
 		this.queueIN = queueIN;
+	}
+
+	public String getRabbitHost() {
+		return rabbitHost;
+	}
+
+	public void setRabbitHost(String rabbitHost) {
+		this.rabbitHost = rabbitHost;
 	}
 	
 }
