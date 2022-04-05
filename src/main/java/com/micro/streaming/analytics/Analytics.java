@@ -10,6 +10,8 @@ import org.bson.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration;
+import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 import com.github.wnameless.json.flattener.JsonFlattener;
@@ -23,11 +25,9 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 
-@SpringBootApplication
-@ComponentScan({"com.micro.streaming.analytics.mongo", "com.micro.streaming.analytics.injector"})
+@SpringBootApplication(exclude={MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
+@ComponentScan({"com.micro.streaming.analytics.mongo", "com.micro.streaming.analytics"})
 public class Analytics {
-	
-	private final static String QUEUE_NAME = "hello";
 	
 	@Autowired
 	private MongoDao mongoDao;
@@ -45,7 +45,7 @@ public class Analytics {
 		
 		ConnectionFactory factory = new ConnectionFactory();
 		
-	    factory.setHost("localhost");
+	    factory.setHost(analyticsProperties.getRabbitHost());
 	    
 	    Connection connection = factory.newConnection();
 	    Channel channel = connection.createChannel();
@@ -96,7 +96,8 @@ public class Analytics {
 			}
 	    };
 	    
-	    channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> { });
+	    channel.basicConsume(analyticsProperties.getQueueIN(), true, deliverCallback, consumerTag -> { });
 	}
+	
 	
 }

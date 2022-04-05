@@ -6,19 +6,22 @@ import org.springframework.stereotype.Component;
 
 @Component
 @PropertySource("classpath:config/application.properties")
-@ConfigurationProperties(prefix = "mongo")
+@ConfigurationProperties(prefix = "spring.data.mongodb.database")
 public class MongoProperties {
 	
+	private Boolean test;
 	private String host;
+	private String testHost;
 	private Integer port;	
 	private String database;
 	private String username;
 	private String password;
+	private String authenticationDatabase;
 	private String southCollectCollection;
 	private String provisionCollectCollection;
 	
 	public String getHost() {
-		return host;
+		return this.test!=null&&this.test==true?this.testHost:host;
 	}
 	public void setHost(String host) {
 		this.host = host;
@@ -58,6 +61,24 @@ public class MongoProperties {
 	}
 	public void setProvisionCollectCollection(String provisionCollectCollection) {
 		this.provisionCollectCollection = provisionCollectCollection;
+	}
+	public String getAuthenticationDatabase() {
+		return authenticationDatabase;
+	}
+	public void setAuthenticationDatabase(String authenticationDatabase) {
+		this.authenticationDatabase = authenticationDatabase;
+	}
+	public Boolean getTest() {
+		return test;
+	}
+	public void setTest(Boolean test) {
+		this.test = test;
+	}
+	public String getTestHost() {
+		return testHost;
+	}
+	public void setTestHost(String testHost) {
+		this.testHost = testHost;
 	}
 		
 }

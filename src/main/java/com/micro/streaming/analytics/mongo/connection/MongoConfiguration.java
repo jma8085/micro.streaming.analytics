@@ -33,14 +33,18 @@ public class MongoConfiguration {
 					mongoProperties.getDatabase(), 
 					mongoProperties.getPassword().toCharArray()
 			);
+			
 			MongoClientOptions options = MongoClientOptions.builder()
 	                .connectionsPerHost(10)
 	                .socketTimeout(10000)
 	                .maxWaitTime(10000)
 	                .connectTimeout(10000)
 	                .build();
-			ServerAddress serverAddresses = new ServerAddress(mongoProperties.getHost(), mongoProperties.getPort());
-
+			
+			ServerAddress serverAddresses = new ServerAddress(mongoProperties.getTestHost(), mongoProperties.getPort());
+			
+			System.out.println("Connection with " + mongoProperties.getHost() + ":" + mongoProperties.getPort() + " - " + serverAddresses.getPort());
+			
 			if(mongoProperties.getUsername().isEmpty()) 
 				mongoClient = new MongoClient(serverAddresses);
 			else
@@ -63,6 +67,10 @@ public class MongoConfiguration {
 		
 		MongoCollection<Document> collection = mongoDatabase.getCollection(mongoProperties.getSouthCollectCollection());
 		
+		if(collection==null) {
+			mongoDatabase.createCollection(mongoProperties.getSouthCollectCollection());
+		}
+		
 		return collection;
 	}
 	
@@ -70,6 +78,10 @@ public class MongoConfiguration {
 	public MongoCollection<Document> provisionCollectCollection(MongoDatabase mongoDatabase) {
 		
 		MongoCollection<Document> collection = mongoDatabase.getCollection(mongoProperties.getProvisionCollectCollection());
+		
+		if(collection==null) {
+			mongoDatabase.createCollection(mongoProperties.getProvisionCollectCollection());
+		}
 		
 		return collection;
 	}
