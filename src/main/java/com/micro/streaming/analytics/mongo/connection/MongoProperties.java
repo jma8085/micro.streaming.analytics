@@ -9,7 +9,6 @@ import org.springframework.stereotype.Component;
 @ConfigurationProperties(prefix = "spring.data.mongodb.database")
 public class MongoProperties {
 	
-	private Boolean test;
 	private String host;
 	private String testHost;
 	private Integer port;	
@@ -21,7 +20,7 @@ public class MongoProperties {
 	private String provisionCollectCollection;
 	
 	public String getHost() {
-		return this.test!=null&&this.test==true?this.testHost:host;
+		return host;
 	}
 	public void setHost(String host) {
 		this.host = host;
@@ -67,12 +66,6 @@ public class MongoProperties {
 	}
 	public void setAuthenticationDatabase(String authenticationDatabase) {
 		this.authenticationDatabase = authenticationDatabase;
-	}
-	public Boolean getTest() {
-		return test;
-	}
-	public void setTest(Boolean test) {
-		this.test = test;
 	}
 	public String getTestHost() {
 		return testHost;
