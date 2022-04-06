@@ -5,7 +5,7 @@
 
 	<groupId>com</groupId>
 	<artifactId>micro.streaming.analytics</artifactId>
-	<version>0.0.2</version>
+	<version>0.0.2-sa</version>
 	<packaging>jar</packaging>
 
 	<name>micro.streaming.analytics</name>
